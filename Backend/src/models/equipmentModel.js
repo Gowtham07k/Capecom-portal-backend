@@ -28,7 +28,7 @@ const equipmentSchema = new Schema({
   current_status:{
     type: String,
     required: true,
-    enum: ["available", "unavailable"],
+    enum: ["available", "in use", "maintenance"],
     default: "available" 
   },
   deletedAt: {

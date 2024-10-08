@@ -12,22 +12,10 @@ const employeeSchema = new Schema({
     type: String,
     required: true
   },
-  department:{
-    type: String,
-    required: true
-  },
-  issue_date:{
-    type: Date,
-  },
-  expected_return:{
-    type: Date,
-  },
-  equipment_details:{
+  department: {
     type: Schema.Types.ObjectId,
-    ref: "Equipment", 
-  },
-  reason:{
-    type:String,
+    ref: "Department",
+    required: true,
   },
   deletedAt: {
     type: Date,
