@@ -1,23 +1,29 @@
 const bcrypt = require("bcryptjs");
-const Joi = require("joi");
 const jwt = require("jsonwebtoken");
 const Employee = require("../models/employeeModel");
-const { validateLogin } = require("../utils/validation/validation");
+const { validateLogin, validateUser } = require("../utils/validation/validation");
 
 exports.login = async (req, res) => {
   const adminName = "superadmin";
   const adminPassword = "superadmin@123";
 
-  const {error} = validateLogin(req.body);
-  if (error) {
-    return res.status(400).json({ 
-      success:false,
-      message: error.details[0].message });
+  const { username, password} = req.body
+  const { error } = validateLogin(req.body);
+
+   if (error) {
+    const errorMessages = error.details.map((err) => err.message);
+    return res.status(400).json({
+      success: false,
+      message: errorMessages.join(", "),
+    });
   }
 
   try {
     //for superadmin
-    if (req.body.username === adminName && req.body.password === adminPassword) {
+    if (
+      req.body.username === adminName &&
+      req.body.password === adminPassword
+    ) {
       const payload = {
         user: {
           username: adminName,
@@ -25,7 +31,7 @@ exports.login = async (req, res) => {
         },
       };
       const token = await jwt.sign(payload, process.env.JWT_SECRET, {
-        expiresIn: "1h",
+        expiresIn: "2h",
       });
       return res.status(200).json({
         success: true,
@@ -66,6 +72,44 @@ exports.login = async (req, res) => {
 };
 
 exports.registerUser = async (req, res) => {
+  const { username, email, password, role } = req.body;
+  const { error } = validateUser(req.body);
+
+ if (error) {
+    const errorMessages = error.details.map((err) => err.message);
+    return res.status(400).json({
+      success: false,
+      message: errorMessages.join(", "),
+    });
+  }
+
+
   try {
-  } catch (error) {}
+    const employee = await Employee.findOne({ username });
+    if (employee) {
+      return res.status(400).json({
+        success: false,
+        message: "User already exists",
+      });
+    }
+    const hashedPassword = await bcrypt.hash(password, 12);
+    const newEmployee = new Employee({
+      username,
+      email,
+      role,
+      password: hashedPassword,
+    });
+
+    await newEmployee.save();
+     res.status(200).json({
+      success: true,
+      message: `${role} was created successfully`,
+      user: {
+        ...newEmployee._doc,
+        password: undefined,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
 };

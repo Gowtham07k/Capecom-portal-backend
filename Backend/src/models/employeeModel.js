@@ -18,7 +18,6 @@ const employeeSchema = new Schema(
     },
     designation: {
       type: String,
-      required: true,
     },
     role: {
       type: String,
@@ -27,12 +26,10 @@ const employeeSchema = new Schema(
     },
     employee_id: {
       type: String,
-      required: true,
     },
     department: {
       type: Schema.Types.ObjectId,
       ref: "Department",
-      required: true,
     },
     deletedAt: {
       type: Date,
